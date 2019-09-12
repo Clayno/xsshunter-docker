@@ -1,0 +1,36 @@
+version: '3'
+
+services:
+   
+    postgresql:
+        image: postgres:alpine
+        container_name: postgresql
+        volumes:
+            - "./data:/var/lib/postgresql/data"
+        environment:
+            POSTGRES_USER: xsshunter
+            POSTGRES_PASSWORD: xsshunter
+            POSTGRES_DB: xsshunter
+
+    backend:
+        build:
+            context: backend-docker
+            dockerfile: Dockerfile 
+        image: backend
+        container_name: backend
+        depends_on: 
+            - postgresql
+
+    nginx:
+        image: nginx:stable-alpine
+        container_name: nginx
+        volumes:
+            - "./log:/var/log/nginx"
+            - "./default:/etc/nginx/conf.d/default.conf:ro"
+            - "./server.crt:/etc/nginx/ssl/ls.run.crt"
+            - "./server.key:/etc/nginx/ssl/ls.run.key"
+        ports:
+            - "127.0.0.1:80:80"
+            - "127.0.0.1:443:443"
+        depends_on:
+            - backend 
