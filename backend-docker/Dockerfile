@@ -22,11 +22,13 @@ RUN pip install -r requirements.txt
 WORKDIR /xsshunter
 RUN apk --purge del .build-deps
 
+
+COPY start.sh /xsshunter/xsshunter/
+RUN chmod +x /xsshunter/xsshunter/start.sh
+COPY config.yaml /xsshunter/xsshunter/
+
 RUN chown -R xsshunter:xsshunter /xsshunter
 USER xsshunter
 
-COPY start.sh /xsshunter/xsshunter/
-RUN chmod +x start.sh
-COPY config.yaml /xsshunter/xsshunter/
-
 CMD ["/bin/sh", "/xsshunter/xsshunter/start.sh"]
+
