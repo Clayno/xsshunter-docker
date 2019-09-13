@@ -1,21 +1,32 @@
 FROM python:2-alpine
 
-WORKDIR /usr/local/share
+RUN mkdir /xsshunter
+RUN addgroup -S xsshunter && adduser --disabled-password \
+    --no-create-home \
+    --gecos "" \
+    -s /bin/false \
+    --ingroup xsshunter \
+    xsshunter
+
+WORKDIR /xsshunter
 RUN apk add git py2-pip postgresql-libs libffi-dev \
     && apk add --no-cache --virtual .build-deps gcc musl-dev postgresql-dev \
     && git clone https://github.com/clayno/xsshunter.git 
 
-WORKDIR /usr/local/share/xsshunter/api
+WORKDIR /xsshunter/xsshunter/api
 RUN pip install -r requirements.txt 
 
-WORKDIR /usr/local/share/xsshunter/gui
+WORKDIR /xsshunter/xsshunter/gui
 RUN pip install -r requirements.txt
 
-WORKDIR /usr/local/share
+WORKDIR /xsshunter
 RUN apk --purge del .build-deps
 
-COPY start.sh /usr/local/share/xsshunter/
-COPY config.yaml /usr/local/share/xsshunter/
+RUN chown -R xsshunter:xsshunter /xsshunter
+USER xsshunter
 
-CMD ["/bin/sh", "/usr/local/share/xsshunter/start.sh"]
+COPY start.sh /xsshunter/xsshunter/
+RUN chmod +x start.sh
+COPY config.yaml /xsshunter/xsshunter/
 
+CMD ["/bin/sh", "/xsshunter/xsshunter/start.sh"]
